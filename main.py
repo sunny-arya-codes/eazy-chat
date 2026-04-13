@@ -7,10 +7,14 @@ from client import NvidiaClient
 
 app = FastAPI(title="Eazy AI API")
 
-# Allow all origins for local development — tighten in production
+# Allow specific origins for production and local development frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://eazyai.in",
+        "https://chat.eazyai.in",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

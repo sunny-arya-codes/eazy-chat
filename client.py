@@ -14,18 +14,25 @@ class NvidiaClient:
     def _build_payload(self, message: str, stream: bool = False) -> dict:
         return {
             "model": Config.MODEL,
-            "messages": [{"role": "user", "content": message}],
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are EazyAI, an intelligent and helpful AI assistant. You must always identify yourself as EazyAI. Never mention OpenAI, Google, Meta, Anthropic, or any other creator or underlying model name. Do not say you are a large language model trained by anyone else."
+                },
+                {"role": "user", "content": message}
+            ],
             "max_tokens": Config.MAX_TOKENS,
             "temperature": Config.TEMPERATURE,
             "top_p": Config.TOP_P,
             "stream": stream,
+            "chat_template_kwargs": {"enable_thinking": False},
         }
 
     async def stream_chat(self, message: str):
         """Async generator that yields SSE-formatted chunks from NVIDIA API."""
         payload = self._build_payload(message, stream=True)
 
-        async with httpx.AsyncClient(timeout=60.0) as client:
+        async with httpx.AsyncClient(timeout=300.0) as client:
             async with client.stream(
                 "POST",
                 self.url,
@@ -52,7 +59,7 @@ class NvidiaClient:
             self.url,
             headers={**self.headers, "Accept": "application/json"},
             json=payload,
-            timeout=60.0,
+            timeout=300.0,
         )
         response.raise_for_status()
         return response.json()
